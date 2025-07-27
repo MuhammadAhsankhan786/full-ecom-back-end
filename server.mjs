@@ -19,8 +19,8 @@ const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
-  "https://full-ecom-front-end-git-main-muhammadahsankhan786.vercel.app",
-  "https://full-ecom-back-1td0pvlt9-ahsans-projects-aed24fad.vercel.app",
+  // "https://full-ecom-front-end-git-main-muhammadahsankhan786.vercel.app",
+  // "https://full-ecom-back-1td0pvlt9-ahsans-projects-aed24fad.vercel.app",
 ];
 
 // app.use(
@@ -293,12 +293,18 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-// ✅ Serve frontend (optional)
+// // ✅ Serve frontend (optional)
+// const __dirname = path.resolve();
+// app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
+// });
 const __dirname = path.resolve();
 app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
 });
+
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 // app.use("/*", express.static(path.join(__dirname, "/E-Commerce/dist")));
 

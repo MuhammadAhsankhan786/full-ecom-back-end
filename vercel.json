@@ -4,6 +4,10 @@
     {
       "src": "server.mjs",
       "use": "@vercel/node"
+    },
+    {
+      "src": "E-Commerce/dist/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -23,8 +27,15 @@
       "dest": "server.mjs"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "E-Commerce/dist/favicon.ico"
+    },
+    {
       "src": "/(.*)",
-      "dest": "server.mjs"
+      "dest": "E-Commerce/dist/index.html",
+      "headers": {
+        "cache-control": "public, max-age=0, must-revalidate"
+      }
     }
   ]
 }
