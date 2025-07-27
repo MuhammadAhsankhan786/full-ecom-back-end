@@ -11,33 +11,27 @@ import { getUserDetails } from "./controllers/userController.js";
 import { verifyToken } from "./middleware/verifyToken.js";
 import upload from "./middleware/multer.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ✅ CORS config with multiple allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
-  // "https://full-ecom-front-end-git-main-muhammadahsankhan786.vercel.app",
-  // "https://full-ecom-back-1td0pvlt9-ahsans-projects-aed24fad.vercel.app",
 ];
 
-// app.use(
-//   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS: " + origin));
-//       }
-//     },
-//     credentials: true,
-//   })
-// );
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
     credentials: true,
   })
 );
@@ -47,6 +41,9 @@ app.use(cookieParser());
 
 app.use("/api/v1", userRoutes);
 app.get("/api/v1/me", verifyToken, getUserDetails);
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 app.post("/api/v1/sign-up", async (req, res) => {
   let reqBody = req.body;
@@ -141,9 +138,9 @@ app.post("/api/v1/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // 🔥 force secure true for vercel (HTTPS)
+      sameSite: "None", // 🔥 Lax سے None کرو کیونکہ cross-origin request ہے
       maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "Lax",
     });
 
     res.status(200).send({
@@ -293,20 +290,18 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-// // ✅ Serve frontend (optional)
-// const __dirname = path.resolve();
-// app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
-// });
-const __dirname = path.resolve();
-app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
-});
-
 app.get("/favicon.ico", (req, res) => res.status(204).end());
-// app.use("/*", express.static(path.join(__dirname, "/E-Commerce/dist")));
+
+const __dirname = path.resolve();
+
+app.use("/", express.static(path.join(__dirname, "E-Commerce", "dist")));
+
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "E-Commerce", "dist", "index.html"));
+// });
+app.get(/(.*)/, (req, res) => {
+  res.sendFile(path.join(__dirname, "E-Commerce/dist/index.html"));
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

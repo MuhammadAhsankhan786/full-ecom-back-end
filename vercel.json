@@ -3,39 +3,23 @@
   "builds": [
     {
       "src": "server.mjs",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "E-Commerce/dist/**/*",
-      "use": "@vercel/static"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "E-Commerce/dist/**",
+          "config/**",
+          "controllers/**",
+          "middleware/**",
+          "routes/**",
+          ".env"
+        ]
+      }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "methods": ["OPTIONS"],
-      "headers": {
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Content-Type, Authorization"
-      },
-      "status": 204
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "server.mjs"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "E-Commerce/dist/favicon.ico"
-    },
-    {
       "src": "/(.*)",
-      "dest": "E-Commerce/dist/index.html",
-      "headers": {
-        "cache-control": "public, max-age=0, must-revalidate"
-      }
+      "dest": "server.mjs"
     }
   ]
 }
