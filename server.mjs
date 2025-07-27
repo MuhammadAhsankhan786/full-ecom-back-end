@@ -290,7 +290,11 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
 // ✅ Serve frontend (optional)
 const __dirname = path.resolve();
 app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
-app.use("/*", express.static(path.join(__dirname, "/E-Commerce/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
+});
+
+// app.use("/*", express.static(path.join(__dirname, "/E-Commerce/dist")));
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
