@@ -293,7 +293,7 @@ app.use("/", express.static(path.join(__dirname, "/E-Commerce/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "/E-Commerce/dist/index.html"));
 });
-
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 // app.use("/*", express.static(path.join(__dirname, "/E-Commerce/dist")));
 
 app.listen(PORT, () => {
