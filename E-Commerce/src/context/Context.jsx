@@ -1,17 +1,18 @@
-// src/context/Context.jsx
-
 import React, { createContext, useReducer, useEffect } from "react";
 import { reducer } from "./Reducer";
 
 // 1. Create the context
 export const GlobalContext = createContext();
 
-// 2. Define initial state
+// 2. Initial state
 const initialState = {
   user: {},
   isLogin: false,
-  baseUrl: "http://localhost:5001/api/v1",
-  isAuthResolved: false, // ⬅️ نیا flag
+  baseUrl:
+    window.location.hostname === "localhost"
+      ? "http://localhost:5001/api/v1"
+      : "https://full-ecom-back-end.vercel.app/api/v1", // 🔁 Vercel URL
+  isAuthResolved: false,
 };
 
 // 3. Context Provider
@@ -29,7 +30,7 @@ export default function ContextProvider({ children }) {
       });
     }
 
-    dispatch({ type: "AUTH_RESOLVED" }); // ⬅️ flag set کرو
+    dispatch({ type: "AUTH_RESOLVED" }); // ✅ Let components know auth status loaded
   }, []);
 
   return (

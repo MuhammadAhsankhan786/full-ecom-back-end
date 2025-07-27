@@ -8,8 +8,9 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import { getUserDetails } from "./controllers/userController.js";
-import { verifyToken } from "./middleware/verifyToken.js";
-import upload from "./middleware/multer.js"; // ✅ correct path
+import { verifyToken } from "./middleware/verifyToken.js"; // ✅ Only this one
+import upload from "./middleware/multer.js";
+import { requireAdmin } from "./middleware/requireAdmin.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -35,49 +36,55 @@ app.get("/api/v1/me", verifyToken, getUserDetails);
 app.post("/api/v1/sign-up", async (req, res) => {
   let reqBody = req.body;
 
+  // ✅ 1. Required Fields Check
   if (
     !reqBody.first_name ||
     !reqBody.last_name ||
     !reqBody.email ||
     !reqBody.password
   ) {
-    res.status(400).send({ message: "All fields are required" });
-    return;
+    return res.status(400).send({ message: "All fields are required" });
   }
+
   reqBody.email = reqBody.email.toLowerCase();
 
   try {
-    // Check if email already exists
-    let check = await db.query("SELECT * FROM users WHERE email = $1", [
+    // ✅ 2. Check if Email Already Exists
+    const check = await db.query("SELECT * FROM users WHERE email = $1", [
       reqBody.email,
     ]);
     if (check.rows?.length > 0) {
-      res.status(409).send({ message: "Email already exists" });
-      return;
+      return res.status(409).send({ message: "Email already exists" });
     }
 
-    const query = `
-      INSERT INTO users (first_name, last_name, email, password)
-VALUES ($1, $2, $3, $4 )
-RETURNING *;
-
-    `;
-    const salt = bcrypt.genSaltSync(10); //$2b$10$5DNmYjXfDM9dQk9RSgemqu
+    // ✅ 3. Password Hashing
+    const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(reqBody.password, salt);
 
-    // console.log("Salt generated:", salt, hash);
+    // ✅ 4. Handle user_role safely
+    let role = parseInt(reqBody.user_role);
+    if (isNaN(role) || (role !== 1 && role !== 4)) {
+      role = 1; // default to 'user'
+    }
+
+    // ✅ 5. Insert into DB
+    const query = `
+      INSERT INTO users (first_name, last_name, email, password, user_role)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
 
     const values = [
       reqBody.first_name,
       reqBody.last_name,
       reqBody.email,
       hash,
-      // reqBody.phone || "", // 👈 if phone missing, use empty string
-      // reqBody.profile || "",
+      role,
     ];
 
     const result = await db.query(query, values);
 
+    // ✅ 6. Respond
     res.status(201).send({
       message: "User registered successfully",
       user: result.rows[0],
@@ -85,7 +92,6 @@ RETURNING *;
   } catch (err) {
     console.error("Error executing query", err.stack);
     res.status(500).send({ message: "Internal Server Error" });
-    return;
   }
 });
 
@@ -189,6 +195,8 @@ app.post(
       next();
     });
   },
+  verifyToken,
+  requireAdmin,
   async (req, res) => {
     try {
       console.log("🟡 Starting /api/v1/products");
@@ -271,7 +279,7 @@ app.get("/api/v1/categories", async (req, res) => {
   }
 });
 
-app.post("/api/v1/category", async (req, res) => {
+app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
   const reqBody = req.body;
 
   // ✅ Validation fix
