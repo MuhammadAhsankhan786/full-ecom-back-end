@@ -20,7 +20,6 @@ const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
-  "https://full-ecom-front-*.vercel.app", // optional wildcard preview builds
 ];
 
 app.use(
@@ -29,7 +28,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS: " + origin));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
