@@ -13,7 +13,6 @@ import upload from "./middleware/multer.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -138,8 +137,8 @@ app.post("/api/v1/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // 🔥 force secure true for vercel (HTTPS)
-      sameSite: "None", // 🔥 Lax سے None کرو کیونکہ cross-origin request ہے
+      secure: process.env.NODE_ENV === "production", // ✅ only true on production
+      sameSite: "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 

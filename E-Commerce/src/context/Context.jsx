@@ -4,14 +4,19 @@ import { reducer } from "./Reducer";
 // 1. Create the context
 export const GlobalContext = createContext();
 
-// 2. Initial state
+// // 2. Initial state
+// const initialState = {
+//   user: {},
+//   isLogin: false,
+//   baseUrl:
+//     window.location.hostname === "localhost"
+//       ? "http://localhost:5001/api/v1"
+//       : "https://full-ecom-back-end.vercel.app/api/v1", // 🔁 Vercel URL
+//   isAuthResolved: false,
+// };
 const initialState = {
   user: {},
   isLogin: false,
-  baseUrl:
-    window.location.hostname === "localhost"
-      ? "http://localhost:5001/api/v1"
-      : "https://full-ecom-back-end.vercel.app/api/v1", // 🔁 Vercel URL
   isAuthResolved: false,
 };
 
