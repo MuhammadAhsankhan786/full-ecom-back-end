@@ -17,8 +17,6 @@ const __filename = fileURLToPath(import.meta.url);
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-import cors from "cors";
-
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
