@@ -19,7 +19,8 @@ const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://full-ecom-front-end.vercel.app",
+  "https://full-ecom-front-end.vercel.app", // production
+  "https://full-ecom-front-im3vk0ix3-ahsans-projects-aed24fad.vercel.app", // ✅ preview deploy
 ];
 
 app.use(
