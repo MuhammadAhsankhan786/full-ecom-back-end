@@ -44,6 +44,10 @@ app.get("/api/v1/me", verifyToken, getUserDetails);
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
+app.get("/api/v1/test", (req, res) => {
+  res.status(200).send({ message: "✅ Test route is working!" });
+});
+
 app.post("/api/v1/sign-up", async (req, res) => {
   let reqBody = req.body;
   if (
