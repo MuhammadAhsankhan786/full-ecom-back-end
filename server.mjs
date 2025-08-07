@@ -12,11 +12,14 @@ import { verifyToken } from "./middleware/verifyToken.js";
 import upload from "./middleware/multer.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { fileURLToPath } from "url";
+
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.resolve();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Allowed Origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
@@ -38,16 +41,15 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Routes
 app.use("/api/v1", userRoutes);
 app.get("/api/v1/me", verifyToken, getUserDetails);
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 app.get("/api/v1/test", (req, res) => {
   res.status(200).send({ message: "✅ Test route is working!" });
 });
 
+// Sign-up route
 app.post("/api/v1/sign-up", async (req, res) => {
   let reqBody = req.body;
   if (
@@ -101,6 +103,7 @@ app.post("/api/v1/sign-up", async (req, res) => {
   }
 });
 
+// Login route
 app.post("/api/v1/login", async (req, res) => {
   let reqBody = req.body;
   if (!reqBody.email || !reqBody.password) {
@@ -141,7 +144,7 @@ app.post("/api/v1/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // ✅ only true on production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -164,6 +167,7 @@ app.post("/api/v1/login", async (req, res) => {
   }
 });
 
+// Logout
 app.get("/api/v1/logout", (req, res) => {
   res.cookie("token", "", {
     maxAge: 1,
@@ -174,6 +178,7 @@ app.get("/api/v1/logout", (req, res) => {
   res.status(200).send({ message: "User Logout" });
 });
 
+// Products list
 app.get("/api/v1/products", async (req, res) => {
   try {
     const result = await db.query(`
@@ -188,6 +193,7 @@ app.get("/api/v1/products", async (req, res) => {
   }
 });
 
+// Add product
 app.post(
   "/api/v1/products",
   (req, res, next) => {
@@ -253,6 +259,7 @@ app.post(
   }
 );
 
+// Categories
 app.get("/api/v1/categories", async (req, res) => {
   try {
     let result = await db.query("SELECT * FROM categories");
@@ -295,13 +302,19 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
 
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-const __dirname = path.resolve();
+// Serve frontend only locally
+if (process.env.NODE_ENV !== "production") {
+  app.use("/", express.static(path.join(__dirname, "frontend", "dist")));
+  app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/dist/index.html"));
+  });
+}
 
-app.use("/", express.static(path.join(__dirname, "frontend", "dist"))); //D:\Back-end-projects\8.frontend-full ecom\frontend\dist // new root for static files
-app.get(/(.*)/, (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend/dist/index.html"));
-});
+// Local listen
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`✅ Server is running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+export default app;
