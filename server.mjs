@@ -309,9 +309,31 @@ app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 // Serve frontend only locally
 if (process.env.NODE_ENV !== "production") {
-  app.use("/", express.static(path.join(__dirname, "frontend", "dist")));
+  app.use(
+    "/",
+    express.static(
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "8.frontend-full ecom",
+        "frontend",
+        "dist"
+      )
+    )
+  );
   app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend/dist/index.html"));
+    res.sendFile(
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "8.frontend-full ecom",
+        "frontend",
+        "dist",
+        "index.html"
+      )
+    );
   });
 }
 
