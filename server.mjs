@@ -103,67 +103,71 @@ app.post("/api/v1/sign-up", async (req, res) => {
   }
 });
 
-// ====== Login Route ======
+// Login route
 app.post("/api/v1/login", async (req, res) => {
-  let reqBody = req.body;
-  if (!reqBody.email || !reqBody.password) {
-    return res.status(400).send({ message: "Email and password are required" });
-  }
-
-  const email = reqBody.email.toLowerCase();
-  const query = "SELECT * FROM users WHERE email = $1";
-  const values = [email];
-
   try {
-    const result = await db.query(query, values);
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .send({ message: "Email and password are required" });
+    }
+
+    const lowerEmail = email.toLowerCase();
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      lowerEmail,
+    ]);
+
     if (result.rows.length === 0) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    const isMatched = bcrypt.compareSync(
-      reqBody.password,
-      result.rows[0].password
-    );
+    const user = result.rows[0];
+
+    const isMatched = bcrypt.compareSync(password, user.password || "");
     if (!isMatched) {
       return res.status(401).send({ message: "Invalid password" });
     }
 
-    const SECRET = process.env.SECRET_TOKEN;
+    if (!process.env.SECRET_TOKEN) {
+      console.error("❌ SECRET_TOKEN not set in environment variables!");
+      return res.status(500).send({ message: "Server configuration error" });
+    }
+
     const token = jwt.sign(
       {
-        id: result.rows[0].id,
-        first_name: result.rows[0].first_name,
-        last_name: result.rows[0].last_name,
-        email: result.rows[0].email,
-        user_role: result.rows[0].user_role,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        id: user.user_id, // ✅ یہاں user_id رکھو
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        user_role: user.user_role,
       },
-      SECRET
+      process.env.SECRET_TOKEN,
+      { expiresIn: "1d" }
     );
 
-    // ✅ Cookie Settings - Secure in prod, cross-site allowed
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      sameSite: "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.status(200).send({
       message: "Login successful",
       user: {
-        user_id: result.rows[0].user_id,
-        first_name: result.rows[0].first_name,
-        last_name: result.rows[0].last_name,
-        email: result.rows[0].email,
-        phone: result.rows[0].phone,
-        user_role: result.rows[0].user_role,
-        profile: result.rows[0].profile,
+        user_id: user.user_id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        user_role: user.user_role,
+        profile: user.profile,
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("❌ Login error:", error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
