@@ -19,7 +19,7 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Allowed Origins
+// ====== CORS Config ======
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
@@ -34,7 +34,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, // ✅ Cookies allow
   })
 );
 
@@ -103,7 +103,7 @@ app.post("/api/v1/sign-up", async (req, res) => {
   }
 });
 
-// Login route
+// ====== Login Route ======
 app.post("/api/v1/login", async (req, res) => {
   let reqBody = req.body;
   if (!reqBody.email || !reqBody.password) {
@@ -142,10 +142,11 @@ app.post("/api/v1/login", async (req, res) => {
       SECRET
     );
 
+    // ✅ Cookie Settings - Secure in prod, cross-site allowed
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -167,13 +168,13 @@ app.post("/api/v1/login", async (req, res) => {
   }
 });
 
-// Logout
+// ====== Logout Route ======
 app.get("/api/v1/logout", (req, res) => {
   res.cookie("token", "", {
     maxAge: 1,
     httpOnly: true,
-    secure: true,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
   });
   res.status(200).send({ message: "User Logout" });
 });
