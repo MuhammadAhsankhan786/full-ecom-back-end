@@ -21,29 +21,30 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
-  "http://localhost:5173", // Local dev
-  "https://full-ecom-front-end.vercel.app", // Production frontend
-  /\.vercel\.app$/, // All vercel preview domains
+  "http://localhost:5173", // local dev
+  "https://full-ecom-front-end.vercel.app", // production frontend
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (
-        !origin ||
-        allowedOrigins.some((o) =>
-          typeof o === "string" ? o === origin : o.test(origin)
-        )
-      ) {
-        callback(null, true);
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
       } else {
-        console.log("❌ CORS Blocked:", origin);
-        callback(new Error("Not allowed by CORS"));
+        return callback(new Error("CORS not allowed for this origin"), false);
       }
     },
+    credentials: true, // allow cookies/auth headers
+  })
+);
+
+app.options(
+  /(.*)/,
+  cors({
+    origin: allowedOrigins,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
