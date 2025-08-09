@@ -13,6 +13,8 @@ import upload from "./middleware/multer.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { fileURLToPath } from "url";
 
+console.log("DATABASE_URL =>", process.env.DATABASE_URL); // Check if .env is loading
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.resolve();
 
@@ -23,6 +25,7 @@ const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
   "http://localhost:5173",
   "https://full-ecom-front-end.vercel.app",
+  "https://full-ecom-front-h1jg7c3rw-ahsans-projects-aed24fad.vercel.app", // Add any other Vercel-generated URLs
 ];
 
 app.use(
@@ -35,6 +38,8 @@ app.use(
       }
     },
     credentials: true, // ✅ Cookies allow
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Explicitly allow OPTIONS
+    allowedHeaders: ["Content-Type", "Authorization"], // Add any other headers you use
   })
 );
 
@@ -150,7 +155,7 @@ app.post("/api/v1/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: "None", // Use "None" for cross-site cookies in production
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -337,11 +342,8 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// Local listen
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`✅ Server is running on port ${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on port ${PORT}`);
+});
 
 export default app;
