@@ -20,11 +20,10 @@ const __dirname = path.resolve();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://full-ecom-front-end.vercel.app", // main production domain
-  /\.vercel\.app$/, // allow all vercel.app preview deployments
+  "http://localhost:5173", // Local dev
+  "https://full-ecom-front-end.vercel.app", // Production frontend
+  /\.vercel\.app$/, // All vercel preview domains
 ];
 
 app.use(
@@ -38,6 +37,7 @@ app.use(
       ) {
         callback(null, true);
       } else {
+        console.log("❌ CORS Blocked:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
