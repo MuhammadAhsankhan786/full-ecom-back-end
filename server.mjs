@@ -21,25 +21,29 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ====== CORS Config ======
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://full-ecom-front-end.vercel.app",
-  "https://full-ecom-front-h1jg7c3rw-ahsans-projects-aed24fad.vercel.app", // Add any other Vercel-generated URLs
+  "https://full-ecom-front-end.vercel.app", // main production domain
+  /\.vercel\.app$/, // allow all vercel.app preview deployments
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.some((o) =>
+          typeof o === "string" ? o === origin : o.test(origin)
+        )
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // ✅ Cookies allow
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Explicitly allow OPTIONS
-    allowedHeaders: ["Content-Type", "Authorization"], // Add any other headers you use
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
