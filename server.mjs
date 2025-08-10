@@ -20,34 +20,22 @@ const __dirname = path.resolve();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://full-ecom-front-end.vercel.app", // production frontend
+  "http://localhost:5173",
+  "https://full-ecom-front-end.vercel.app", // main production domain
+  /\.vercel\.app$/, // allow all vercel.app preview deployments
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("CORS not allowed for this origin"), false);
-      }
-    },
-    credentials: true, // allow cookies/auth headers
-  })
-);
-
-app.options(
-  /(.*)/,
-  cors({
-    origin: allowedOrigins,
+    origin: "http://localhost:5173",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
+console.log("CORS middleware applied for origin: http://localhost:5173");
 app.use(express.json());
 app.use(cookieParser());
 
