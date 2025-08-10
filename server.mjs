@@ -22,20 +22,34 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://full-ecom-front-end.vercel.app", // main production domain
-  /\.vercel\.app$/, // allow all vercel.app preview deployments
+  "http://localhost:5173", // Local development
+  "https://full-ecom-front-end.vercel.app", // Production frontend
+  /\.vercel\.app$/, // Any Vercel preview domain
 ];
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (
+        !origin ||
+        allowedOrigins.some((o) =>
+          o instanceof RegExp ? o.test(origin) : o === origin
+        )
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-console.log("CORS middleware applied for origin: http://localhost:5173");
+
+console.log("✅ CORS middleware applied for:", allowedOrigins);
+
 app.use(express.json());
 app.use(cookieParser());
 
