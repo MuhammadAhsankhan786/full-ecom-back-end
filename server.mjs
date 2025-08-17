@@ -15,40 +15,31 @@ import { fileURLToPath } from "url";
 
 console.log("DATABASE_URL =>", process.env.DATABASE_URL); // Check if .env is loading
 
+// Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.resolve();
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Allowed origins list
-const allowedOrigins = [
-  "http://localhost:5173", // Local development
-  "https://full-ecom-front-end.vercel.app", // Production frontend
-  /\.vercel\.app$/, // Allow all Vercel preview URLs
-];
+// ---------- CORS Setup ----------
+// const allowedOrigins = [
+//   "http://localhost:5173", // Local development
+//   "https://full-ecom-front-end.vercel.app", // Production frontend
+//   /\.vercel\.app$/, // Allow all Vercel preview URLs
+// ];
 
-// CORS middleware
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173 ,"],
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        // Allow requests like Postman / server-to-server without origin
-        return callback(null, true);
-      }
-      if (
-        allowedOrigins.some((o) =>
-          o instanceof RegExp ? o.test(origin) : o === origin
-        )
-      ) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("CORS not allowed for this origin"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: "http://localhost:5173", // ✅ frontend URL
+    credentials: true, // ✅ cookies/session allow
   })
 );
 
@@ -233,7 +224,8 @@ app.post(
     try {
       const { product_name, description, price, category_id } = req.body;
       const product_image = req.file?.path;
-
+      console.log("🟢 req.body:", req.body);
+      console.log("🟢 req.file:", req.file);
       if (
         !product_name ||
         !description ||
@@ -323,35 +315,39 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
 
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-// Serve frontend only locally
-if (process.env.NODE_ENV !== "production") {
-  app.use(
-    "/",
-    express.static(
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "8.frontend-full ecom",
-        "frontend",
-        "dist"
-      )
-    )
-  );
-  app.get(/(.*)/, (req, res) => {
-    res.sendFile(
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "8.frontend-full ecom",
-        "frontend",
-        "dist",
-        "index.html"
-      )
-    );
-  });
-}
+// Serve frontend only locally //D:\Back-end-projects\6.backend-full-ecom\backend //D:\Back-end-projects\8.frontend-full ecom\frontend\dist
+
+// {
+//   app.use(
+//     "/",
+//     express.static(
+//       path.join(
+//         __dirname,
+//         "..",
+//         "..",
+//         "8.frontend-full ecom",
+//         "frontend",
+//         "dist"
+//       )
+//     )
+//   );
+//   app.get("*", (req, res) => {
+//     res.sendFile(
+//       path.join(
+//         __dirname,
+//         "..",
+//         "..",
+//         "8.frontend-full ecom",
+//         "frontend",
+//         "dist",
+//         "index.html"
+//       )
+//     );
+//   });
+// }
+
+app.use("/", express.static(path.join(__dirname, "./frontend/dist")));
+app.use("/*splat", express.static(path.join(__dirname, "./frontend/dist")));
 
 app.listen(PORT, () => {
   console.log(`✅ Server is running on port ${PORT}`);

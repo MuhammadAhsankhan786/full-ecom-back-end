@@ -10,14 +10,14 @@ import "dotenv/config";
 //   api_secret: process.env.API_SECRET ? "****" : undefined,
 // });
 
-// Cloudinary config
+//Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
 });
 
-// Test Cloudinary connection
+//Test Cloudinary connection
 // cloudinary.api.ping((error, result) => {
 //   if (error) console.error("❌ Cloudinary Connection Error:", error);
 //   else console.log("✅ Cloudinary Connected:", result);
@@ -37,12 +37,12 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    // console.log("🟡 Processing file:", {
-    //   name: file.originalname,
-    //   mimetype: file.mimetype,
-    // });
+    console.log("🟡 Processing file:", {
+      name: file.originalname,
+      mimetype: file.mimetype,
+    });
     if (!file.mimetype.startsWith("image/")) {
-      // console.error("❌ Invalid file type:", file.mimetype);
+      console.error("❌ Invalid file type:", file.mimetype);
       return cb(
         new Error("Sirf image files allowed hain (jpg, jpeg, png, webp)!")
       );
