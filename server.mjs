@@ -103,30 +103,47 @@ app.post("/api/v1/sign-up", async (req, res) => {
   }
 });
 
-// Login route
+// Login route with debugging logs
 app.post("/api/v1/login", async (req, res) => {
   try {
+    console.log("🔹 Login route hit");
+    console.log("📩 Request body:", req.body);
+
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.warn("⚠️ Missing email or password");
       return res
         .status(400)
         .send({ message: "Email and password are required" });
     }
 
     const lowerEmail = email.toLowerCase();
+    console.log("🔎 Looking for user with email:", lowerEmail);
+
     const result = await db.query("SELECT * FROM users WHERE email = $1", [
       lowerEmail,
     ]);
+    console.log("📊 DB query result:", result.rows);
 
     if (result.rows.length === 0) {
+      console.warn("❌ User not found for email:", lowerEmail);
       return res.status(404).send({ message: "User not found" });
     }
 
     const user = result.rows[0];
+    console.log("✅ User found:", {
+      id: user.user_id,
+      email: user.email,
+      role: user.user_role,
+    });
 
+    console.log("🔐 Comparing passwords...");
     const isMatched = bcrypt.compareSync(password, user.password || "");
+    console.log("🔑 Password match result:", isMatched);
+
     if (!isMatched) {
+      console.warn("❌ Invalid password for user:", lowerEmail);
       return res.status(401).send({ message: "Invalid password" });
     }
 
@@ -135,9 +152,10 @@ app.post("/api/v1/login", async (req, res) => {
       return res.status(500).send({ message: "Server configuration error" });
     }
 
+    console.log("🔏 Generating JWT token...");
     const token = jwt.sign(
       {
-        id: user.user_id, // ✅ یہاں user_id رکھو
+        id: user.user_id,
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
@@ -147,13 +165,15 @@ app.post("/api/v1/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log("🍪 Setting cookie...");
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "None", // Use "None" for cross-site cookies in production
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
+    console.log("✅ Login successful for user:", lowerEmail);
     res.status(200).send({
       message: "Login successful",
       user: {
@@ -167,7 +187,7 @@ app.post("/api/v1/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Login error:", error);
+    console.error("❌ Login error caught:", error);
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
