@@ -13,7 +13,7 @@ import upload from "./middleware/multer.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { fileURLToPath } from "url";
 
-console.log("DATABASE_URL =>", process.env.DATABASE_URL); // Check if .env is loading
+// console.log("DATABASE_URL =>", process.env.DATABASE_URL); // Check if .env is loading
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -22,24 +22,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ---------- CORS Setup ----------
-// const allowedOrigins = [
-//   "http://localhost:5173", // Local development
-//   "https://full-ecom-front-end.vercel.app", // Production frontend
-//   /\.vercel\.app$/, // Allow all Vercel preview URLs
-// ];
-
-// app.use(
-//   cors({
-//     origin: ["http://localhost:5173 ,"],
-//     credentials: true,
-//   })
-// );
-
 app.use(
   cors({
-    origin: "http://localhost:5173", // ✅ frontend URL
-    credentials: true, // ✅ cookies/session allow
+    origin: ["http://localhost:5173"],
+    credentials: true,
   })
 );
 
@@ -316,35 +302,6 @@ app.post("/api/v1/category", verifyToken, requireAdmin, async (req, res) => {
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 // Serve frontend only locally //D:\Back-end-projects\6.backend-full-ecom\backend //D:\Back-end-projects\8.frontend-full ecom\frontend\dist
-
-// {
-//   app.use(
-//     "/",
-//     express.static(
-//       path.join(
-//         __dirname,
-//         "..",
-//         "..",
-//         "8.frontend-full ecom",
-//         "frontend",
-//         "dist"
-//       )
-//     )
-//   );
-//   app.get("*", (req, res) => {
-//     res.sendFile(
-//       path.join(
-//         __dirname,
-//         "..",
-//         "..",
-//         "8.frontend-full ecom",
-//         "frontend",
-//         "dist",
-//         "index.html"
-//       )
-//     );
-//   });
-// }
 
 app.use("/", express.static(path.join(__dirname, "./frontend/dist")));
 app.use("/*splat", express.static(path.join(__dirname, "./frontend/dist")));
